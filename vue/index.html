@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <div id="app">
+        用户id:
+        <input type="text" v-model="id"> 用户名:
+        <input type="text" v-model="username"> 密码:
+        <input type="text" v-model="password">
+        <button @click="add">添加用户</button>
+        <ul>
+            <template v-for="(item,index) of items">
+                <input type="text" v-model="item.username">
+                <span @click="info(item.id,index)">详情</span>
+                <span>修改</span>
+                <span @click="del(item.id)">删除</span>
+
+                <br>
+            </template>
+            <span>用户详情：{{userinfo.id}}----{{userinfo.username}}</span>
+        </ul>
+
+    </div>
+    <script src="js/axios.js"></script>
+    <script src="js/vue.js"></script>
+
+    <script>
+        axios.defaults.baseURL = 'http://www.laravel.com';
+
+        new Vue({
+            el: '#app',
+            data: {
+                items: [],
+                userinfo: {},
+                id: 0,
+                username: '',
+                password: '',
+            },
+            methods: {
+
+                del(id) {
+                    // console.log(id);
+                    axios.delete(`/user/${id}`).then((res) => {
+                        // arr = [];
+                        let item = this.items.filter(value => {
+                            return value.id != id;
+                        });
+                        // console.log(item);
+                        this.items=item
+                    })
+                },
+                info(id,index) {
+                    // console.log(index);
+                    axios.get(`/user/${id}/${index}`).then(({ data }) => {
+                        this.userinfo = data
+                    })
+                },
+                add() {
+                    axios.post('/user', { adduser: { id: this.id, username: this.username, password: this.password } }).then(({ data }) => {
+                        this.items = data
+                    })
+                },
+                list() {
+                    axios.get('/user').then(({ data }) => {
+                        this.items = data
+                    })
+                },
+                edit(id = 0) {
+                    // es6 array.filter
+                    let item = this.items.filter(value => {
+                        return value.id == id;
+                    })[0];
+                    // put请求
+                    axios.put(`/users/${id}`, item).then(({ data }) => {
+                        console.log(data);
+                    })
+                }
+            },
+            mounted() {
+                this.list();
+            },
+        })
+    </script>
+</body>
+
+</html>
